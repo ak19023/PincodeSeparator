@@ -1,0 +1,31 @@
+<html xmlns:th="https://www.thymeleaf.org">
+
+<body>
+	<h1>Upload a File to Separate Pincodes and Phone Numbers</h1>
+	<div th:if="${message}">
+		<h2 th:text="${message}"/>
+	</div>
+	<style>
+		form {
+		  padding-left: 50px;
+	    }
+	    div {
+		  padding-left: 50px;
+	    }
+	</style>
+
+  <form method="POST" enctype="multipart/form-data">
+    <input type="file" accept=".xls,.xlsx" name="file"/> <br/><br/>
+    <button type="submit" value="Upload">Upload</button>
+  </form>
+
+	<div>
+		<ul>
+			<li th:each="file : ${files}">
+				<a th:href="${file}"> Download File </a>
+			</li>
+		</ul>
+	</div>
+
+</body>
+</html>
