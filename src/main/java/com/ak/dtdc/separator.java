@@ -14,9 +14,13 @@ import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 
 public class separator {
+	static Logger log = LoggerFactory.getLogger(separator.class);
 	
 	private static String FILEPATH = "/home/ak/Downloads/ms.xls";
     private static int workingSheet = 0;    
+    
+    // max rows data can be empty. If >= this the separation stops.
+    private static final int gapThreshold = 5;  
     
     public separator(String filepath, int sheetNum) {
         FILEPATH = filepath;
@@ -27,11 +31,13 @@ public class separator {
         FILEPATH = filepath;
         workingSheet = 0;
     }
-    
+    /*
+     * Expecting input : An excel workbook with the data in sheet 0 only (as of now).
+     */
     public static void separate(String FILEPATH) throws Exception {
 
     	final Workbook existingBook = Workbook.getWorkbook(new File(FILEPATH));
-        final String[] sheets = existingBook.getSheetNames();
+        // final String[] sheets = existingBook.getSheetNames();
         final Sheet sheet = existingBook.getSheet(workingSheet);
         int baseRow = -1;
         final int pinCol = sheet.getColumns();
@@ -61,7 +67,7 @@ public class separator {
             }
             ++row;
         }
-        
+        if (dataCol == -1) throw new Exception("There are no phone numbers and pincodes");
         
         WritableWorkbook writeBook = Workbook.createWorkbook(new File(FILEPATH), existingBook);
         WritableSheet wSheet = writeBook.getSheet(workingSheet);
@@ -75,18 +81,27 @@ public class separator {
             wSheet.addCell((WritableCell)new Label(k, baseRow, sheet.getCell(k, baseRow).getContents()));
         }
         
-        
-        for (int l = row; l < rows; ++l) {
+        int countEmptyRows = 0;
+        int l = row;
+        for (; l < rows; ++l) {
             final String str = sheet.getCell(dataCol, l).getContents();
             final String[] ans = getP(str);
-            
-            // set height for row
+            if (str.isEmpty()) countEmptyRows++;
+            if (countEmptyRows == gapThreshold) break;
+            // set height for row -- set if cell height need to be changed
             // wSheet.setRowView(l, 16);
             wSheet.addCell((WritableCell)new Label(dataCol, l, sheet.getCell(dataCol, l).getContents()));
             
             wSheet.addCell((WritableCell)new Number(pinCol, l, (double)Integer.parseInt(ans[0])));
             wSheet.addCell((WritableCell)new Number(phoneCol, l, (double)Long.parseLong(ans[1])));
         }
+        
+        while (countEmptyRows-- > 0) {
+            wSheet.addCell((WritableCell)new Label(pinCol, l, ""));
+            wSheet.addCell((WritableCell)new Label(phoneCol, l--, ""));
+        }
+        
+        
         existingBook.close();
         writeBook.write();
         writeBook.close();
