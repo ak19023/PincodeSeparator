@@ -61,18 +61,29 @@ public class separator {
             }
             ++row;
         }
+        
+        
         WritableWorkbook writeBook = Workbook.createWorkbook(new File(FILEPATH), existingBook);
         WritableSheet wSheet = writeBook.getSheet(workingSheet);
-        wSheet.addCell((WritableCell)new Label(pinCol, baseRow, "PINCODE"));
-        wSheet.addCell((WritableCell)new Label(phoneCol, baseRow, "PHONE"));
+        
+        wSheet.addCell((WritableCell)new Label(pinCol, baseRow, "Pincode"));
+        wSheet.addCell((WritableCell)new Label(phoneCol, baseRow, "Phone"));        
+        
         // System.out.println("process initiated...");
         final int rows = sheet.getRows();
         for (int k = 0; k < pinCol; ++k) {
             wSheet.addCell((WritableCell)new Label(k, baseRow, sheet.getCell(k, baseRow).getContents()));
         }
+        
+        
         for (int l = row; l < rows; ++l) {
             final String str = sheet.getCell(dataCol, l).getContents();
             final String[] ans = getP(str);
+            
+            // set height for row
+            // wSheet.setRowView(l, 16);
+            wSheet.addCell((WritableCell)new Label(dataCol, l, sheet.getCell(dataCol, l).getContents()));
+            
             wSheet.addCell((WritableCell)new Number(pinCol, l, (double)Integer.parseInt(ans[0])));
             wSheet.addCell((WritableCell)new Number(phoneCol, l, (double)Long.parseLong(ans[1])));
         }
