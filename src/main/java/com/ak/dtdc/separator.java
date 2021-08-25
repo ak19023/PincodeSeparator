@@ -16,10 +16,10 @@ import jxl.write.WritableWorkbook;
 public class separator {
 	static Logger log = LoggerFactory.getLogger(separator.class);
 	
-	private static String FILEPATH = "/home/ak/Downloads/ms.xls";
+	private static String FILEPATH;
     private static int workingSheet = 0;    
     
-    // max rows data can be empty. If >= this the separation stops.
+    // max rows data can be empty. If >= this the separation gets failed.
     private static final int gapThreshold = 5;  
     
     public separator(String filepath, int sheetNum) {

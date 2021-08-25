@@ -7,19 +7,29 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Date;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Stream;
 
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class FileSystemStorageService implements StorageService {
-
+	
 	private final Path rootLocation = Paths.get(FileUploadController.basePath);
 	private String filePath;
+	
+	// scheduler to delete uploaded file after a fixed time.
+	private TaskScheduler scheduler;
+	public static final long DELAY = 300L; // delete file after 300 seconds
 
 	@Override
 	public void store(MultipartFile file) {
@@ -38,6 +48,8 @@ public class FileSystemStorageService implements StorageService {
 				Files.copy(inputStream, destinationFile,
 					StandardCopyOption.REPLACE_EXISTING);
 				filePath = FileUploadController.basePath + File.separator + file.getOriginalFilename();
+				
+				deleteFile();
 			}
 		}
 		catch (IOException e) {
@@ -45,9 +57,23 @@ public class FileSystemStorageService implements StorageService {
 		}
 	}
 	
+	Runnable fileDeleteRunnable = new Runnable(){
+	    @Override
+	    public void run() {
+	    	deleteAll();
+	    	scheduler = null;
+	    }
+	};
+
+	public void deleteFile() {
+	    ScheduledExecutorService localExecutor = Executors.newSingleThreadScheduledExecutor();
+	    scheduler = new ConcurrentTaskScheduler(localExecutor);
+	    scheduler.schedule(fileDeleteRunnable, new Date(System.currentTimeMillis() + DELAY*1000));
+	}
+	
 	@Override
 	public void separatePinsAndPhones() throws Exception {
-			separator.separate(filePath);
+		separator.separate(filePath);
 	}
 
 	@Override

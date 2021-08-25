@@ -22,7 +22,9 @@
 	<div>
 		<ul>
 			<li th:each="file : ${files}">
-				<a th:href="${file}"> Download File </a>
+				<a th:href="${file}">
+				Download File    <i th:text = "${file}"></i>
+				</a>
 			</li>
 		</ul>
 	</div>
