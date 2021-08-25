@@ -15,7 +15,6 @@ import java.util.stream.Stream;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.scheduling.TaskScheduler;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
@@ -37,6 +36,11 @@ public class FileSystemStorageService implements StorageService {
 			if (file.isEmpty()) {
 				System.out.println("Cannot store empty files");
 			}
+			
+			// delete any previous file (this is to ensure the size of the application doesn't increase)
+			deleteAll();
+			init();
+			
 			Path destinationFile = this.rootLocation.resolve(
 					Paths.get(file.getOriginalFilename()))
 					.normalize().toAbsolutePath();
